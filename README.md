@@ -2,8 +2,8 @@
 
 > **Multi‑Modal Edge AI Security Platform**  |  CCTV + Acoustic + LLM SITREP  |  8‑week PoC
 
-![Build](https://img.shields.io/github/actions/workflow/status/your‑org/sentinel‑edge/build.yml?branch=main)
-![License](https://img.shields.io/github/license/your‑org/sentinel‑edge)
+![Build](https://img.shields.io/github/actions/workflow/status/Ilhanemreadak/sentinel‑edge/build.yml?branch=main)
+![License](https://img.shields.io/github/license/Ilhanemreadak/sentinel‑edge)
 
 ---
 
