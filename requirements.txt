@@ -1,0 +1,36 @@
+
+# Sentinel Edge • requirements.txt (backend + inference)
+# ----------------------------------------------------
+# Lightweight dependencies to run API, event-stream, and model inference.
+# Model training is performed separately on Colab.
+
+# --- Core Web stack ----------------------------------------------------
+fastapi~=0.111.0
+uvicorn[standard]~=0.30.1
+pydantic~=2.7.1
+python-multipart~=0.0.9
+orjson~=3.10.1
+aiofiles~=23.2.1
+
+# --- Messaging ---------------------------------------------------------
+aiokafka~=0.10.0
+
+# --- Database / Geo ----------------------------------------------------
+asyncpg~=0.29.0
+sqlalchemy[asyncio]~=2.0.29
+geoalchemy2~=0.14.3           # PostGIS support
+psycopg2-binary~=2.9.9        # CLI / dev usage
+
+# --- Inference / ML runtime -------------------------------------------
+# Tip: If you don't have an NVIDIA GPU or run into issues, switch to 'onnxruntime==1.17.1'
+onnxruntime-gpu==1.17.1
+opencv-python-headless~=4.10.0.82
+huggingface-hub~=0.23.2
+sentencepiece~=0.2.0
+
+# --- Observability -----------------------------------------------------
+prometheus-client~=0.20.0
+
+# --- Misc --------------------------------------------------------------
+pyyaml~=6.0.1
+python-dotenv~=1.0.1
