@@ -1,122 +1,196 @@
-# Sentinel Edge
+# Sentinel Edge
 
-> **Multi‑Modal Edge AI Security Platform**  |  CCTV + Acoustic + LLM SITREP  |  8‑week PoC
+> **Multi-Modal Edge AI Security Platform**  |  CCTV + Acoustic + LLM SITREP  |  8-Week PoC
 
-![Build](https://img.shields.io/github/actions/workflow/status/Ilhanemreadak/sentinel‑edge/build.yml?branch=main)
-![License](https://img.shields.io/github/license/Ilhanemreadak/sentinel‑edge)
-
----
-
-## ✨ Project Summary
-
-Sentinel Edge is a plug‑and‑play software stack that fuses **computer vision, acoustic event detection, low‑latency edge inference, and large‑language‑model summarisation** to generate NATO‑style situation reports (SITREPs) for forward bases, border posts, and critical infrastructure.
-
-<p align="center"><img src="docs/architecture.svg" width="650" alt="High‑Level Architecture"></p>
+![Build](https://img.shields.io/github/actions/workflow/status/Ilhanemreadak/sentinel-edge/build.yml?branch=main)  ![License](https://img.shields.io/github/license/Ilhanemreadak/sentinel-edge)
 
 ---
 
-## 🚀 Key Features
+## ✨ Project Summary
 
-* **Real‑Time Object Detection** – Day/night cameras, IR capable; humans, vehicles, drones.
-* **Acoustic Event Classification** – Gunshot, explosion, drone rotor, engine noise.
-* **Sensor Fusion & Tracking** – Correlates vision + audio + ADS‑B/AIS feeds.
-* **LLM SITREP Generator** – Llama‑3 fine‑tuned to output concise, priority‑sorted reports.
-* **Cross‑Platform Tactical UI** – .NET MAUI desktop/tablet app; live video, map, PDF export.
-* **Edge‑to‑Core Scalability** – Jetson Orin nodes forward events to Kafka↔FastAPI core.
+Sentinel Edge is a plug-and-play solution designed to **empower security teams** at forward operating bases, border checkpoints, and sensitive installations. By integrating:
 
----
+1. **Multi-spectral Vision** (optical + infrared),
+2. **Acoustic Event Detection** (gunshots, explosions, drone rotors),
+3. **Sensor Fusion & Tracking** across modalities,
+4. **Low-Latency Edge Inference** on Jetson/ARM,
+5. **LLM-Powered SITREP Generation**,
 
-## 🏗️ Tech Stack
+—Sentinel Edge transforms raw sensor feeds into **actionable, NATO-style Situation Reports** in real time. This PoC platform demonstrates a robust, scalable architecture capable of adapting to diverse field requirements.
 
-| Layer           | Tech                                                        |
-| --------------- | ----------------------------------------------------------- |
-|  Edge Inference | **C++**, PyTorch 2.6, YOLO‑v8m                              |
-| Backend API     | **Python 3.11**, FastAPI, Kafka                             |
-| Data Lake       | TimescaleDB + PostGIS                                       |
-| UI              | **C# .NET MAUI**, gRPC                                      |
-| DevOps          | Docker Compose → k3s (Helm)                                 |
-| License         | Code: **Apache 2.0**  •  Model Weights: **OpenRAIL‑M v1.3** |
+<p align="center"><img src="docs/architecture.svg" width="650" alt="High-Level Architecture"></p>
 
 ---
 
-## 🛠️ Quick Start (Dev)
+## 🚀 Key Features
+
+1. **Real-Time Object Detection**
+
+   * Supports both day and IR-enabled night vision.
+   * Detects personnel, ground vehicles, drones, maritime craft.
+   * Leverages YOLO-v8m fine-tuned on defense datasets.
+
+2. **Acoustic Event Classification**
+
+   * Classifies gunshots, explosions, rotor noise, engine sounds.
+   * Uses PANNs/Wav2Vec2 for sub-second inference.
+   * Triggers alerts when anomalous audio is detected.
+
+3. **Sensor Fusion & Geolocation**
+
+   * Correlates feeds from CCTV, microphones, ADS-B/AIS.
+   * Tracks targets across sensors; outputs merged time-series.
+   * Optional geofencing: define zones of interest or exclusion.
+
+4. **LLM-Based SITREP Generator**
+
+   * Llama-3 Instruct fine-tuned to NATO STANAG style.
+   * Summarizes prioritized threats, timestamps, and metadata.
+   * Outputs in JSON, plain text, and PDF report formats.
+
+5. **Cross-Platform Tactical UI**
+
+   * .NET MAUI desktop and tablet app.
+   * Live video feed, heatmap overlay, geospatial layers.
+   * PDF export and slide deck generation.
+
+6. **Edge-to-Core Scalability**
+
+   * Edge nodes run C++/PyTorch containers for inference.
+   * Kafka for durable, high-throughput event streaming.
+   * FastAPI + TimescaleDB at core; optional k3s for production.
+
+---
+
+## 🛠️ Quick Start (Development)
+
+### Prerequisites
+
+* Docker Engine & Docker Compose v2
+* Python 3.11
+* Git
+
+### 1. Clone the Repository
 
 ```bash
-# 1. Clone
-$ git clone https://github.com/your‑org/sentinel‑edge.git && cd sentinel‑edge
-
-# 2. Build & run services (CPU)
-$ docker compose up ‑d backend edge ui db kafka
-
-# 3. Tail logs
-$ docker compose logs -f edge
-
-# 4. Open UI
-$ open http://localhost:8080   # or ctrl‑click URL on Windows
+$ git clone https://github.com/Ilhanemreadak/sentinel-edge.git
+$ cd sentinel-edge
 ```
 
-> **GPU / Jetson:** see [`edge/README.md`](edge/README.md) for CUDA base image & Jetson deploy notes.
+### 2. Start Core Services
 
----
-
-## 📂 Repository Layout
-
-```
-├─ edge/               # C++ inference node
-│  ├─ src/
-│  └─ Dockerfile
-├─ backend/            # FastAPI + Kafka consumer/producer
-│  ├─ app/
-│  └─ requirements.txt
-├─ ui/                 # .NET MAUI client
-├─ models/             # YOLO weights, audio checkpoints (OpenRAIL licensed)
-├─ charts/             # Helm / k3s manifests
-└─ docs/               # Architecture diagrams, spec sheets
+```bash
+$ docker compose up --build -d
 ```
 
+* **Kafka**, **Zookeeper**, **TimescaleDB + PostGIS**, **FastAPI** containers will launch.
+* Use `docker compose logs -f` to monitor startup.
+
+### 3. Create Kafka Topic
+
+```bash
+$ docker exec -it sentinel-edge-kafka-1 \
+    kafka-topics.sh --bootstrap-server localhost:9092 \
+    --create --topic hdfs-traces --partitions 3 --replication-factor 1
+```
+
+### 4. Setup Python Virtual Environment
+
+```bash
+$ cd backend
+$ python -m venv .venv
+$ source .venv/bin/activate         # macOS/Linux
+$ .\.venv\Scripts\Activate.ps1    # Windows PowerShell
+```
+
+### 5. Install Dependencies & Launch Producer
+
+```bash
+$ pip install --upgrade pip
+$ pip install -r requirements.txt   # installs aiokafka, asyncpg, FastAPI, etc.
+$ python infra/kafka/producer.py     # generates mock events every 2s
+```
+
+### 6. Start Consumer to Ingest into DB
+
+```bash
+$ python infra/kafka/consumer.py     # reads from Kafka, writes to TimescaleDB
+```
+
+### 7. Run the API Server
+
+```bash
+$ uvicorn main:app --reload           # rest API at http://127.0.0.1:8000
+```
+
+### 8. Verify Health Endpoint
+
+```bash
+$ curl http://127.0.0.1:8000/api/health
+{"status":"ok"}
+```
+
+### 9. Fetch Recent Anomalies
+
+```bash
+$ curl "http://127.0.0.1:8000/api/anomalies?limit=5"
+# Returns JSON array of latest detected events
+```
+
+> **Tip:** On NVIDIA-enabled hosts, enable GPU support by adding `--gpus all` to `docker compose run` commands.
+
 ---
 
-## 🗺️ Roadmap
+## 📂 Repository Structure
 
-See **[`roadmap.md`](roadmap.md)** for the 8‑week milestone plan.
-
-Key upcoming milestones:
-
-1. **M1 – Edge RTSP Pipeline (07 Jul)**
-2. **M2 – FastAPI + Kafka Skeleton (14 Jul)**
-3. **M3 – Audio Pipeline PoC (28 Jul)**
-4. **M4 – UI Alpha + SITREP LLM (11 Aug)**
-5. **M5 – End‑to‑End Demo (30 Aug)**
-
----
-
-## 🤝 Contributing
-
-Pull requests are welcome! Please sign the CLA bot on your first PR.
-For major changes, open a discussion first to propose your idea.
-
-1. Fork → Feature branch → PR targeting `develop`.
-2. Ensure `pre‑commit` passes (`flake8`, `clang‑format`, `dotnet format`).
-3. One ✔ review + green CI required for merge.
+```text
+edge/                   C++ RTSP inference node with Dockerfile
+backend/                FastAPI app + Kafka producer & consumer
+ ├─ infra/              Dockerfiles, entrypoint scripts
+ ├─ kafka/              Producer & consumer scripts
+ ├─ app/                FastAPI code, routers, schemas, models
+ └─ requirements.txt    Python dependencies
+ui/                     .NET MAUI client (XAML + C#)
+models/                 Pretrained model weights & audio checkpoints
+charts/                 Helm charts & k3s manifests for production
+docs/                   Architecture diagrams, API specs, slides
+```
 
 ---
 
-## 📜 License
-
-* **Source Code:** [Apache License 2.0](LICENSE)
-* **Model Weights & Checkpoints:** [OpenRAIL‑M v1.3](models/LICENSE_MODEL)
-
-> "Export regulations may apply. End‑user is responsible for compliance with applicable laws."
-> © 2025 Your Name / Your Org
+For the detailed 8-week roadmap, see [roadmap.md](roadmap.md). For architectural insights, view \[docs/architecture.svg].
 
 ---
 
-## 📧 Contact
+Happy hacking and stay secure! 🚀
 
-| Role         | Name  | E‑mail                                    |
-| ------------ | ----- | ----------------------------------------- |
-| Project Lead | İlhan Emre ADAK | [dev.adak.ie@outlook.com](mailto:dev.adak.ie@outlook.com) |
-| AI Engineer  | İlhan Emre ADAK | [dev.adak.ie@outlook.com](mailto:dev.adak.ie@outlook.com) |
-| UI Engineer  | —     | —                                         |
+---
+
+## 🤝 Contributing
+
+Pull requests are welcome! Please sign the CLA bot on your first PR. For major changes, open a discussion first to propose your idea.
+
+1. Fork the repository and create a feature branch targeting `develop`.
+2. Write clear, focused commits and ensure all code passes `pre-commit` checks (e.g., `flake8`, `clang-format`, `dotnet format`).
+3. Submit a pull request with a descriptive title and summary. One ✔️ review plus green CI is required for merge.
+
+---
+
+## 📜 License
+
+* **Source Code:** [Apache License 2.0](LICENSE)
+* **Model Weights & Checkpoints:** [OpenRAIL-M v1.3](models/LICENSE_MODEL)
+
+> Export regulations may apply. End users are responsible for compliance with applicable laws.
+
+---
+
+## 📧 Contact
+
+| Role         | Name            | Email                                                     |
+| ------------ | --------------- | --------------------------------------------------------- |
+| Project Lead | İlhan Emre ADAK | [dev.adak.ie@outlook.com](mailto:dev.adak.ie@outlook.com) |
+| AI Engineer  | İlhan Emre ADAK | [dev.adak.ie@outlook.com](mailto:dev.adak.ie@outlook.com) |
+| UI Engineer  | —               | —                                                         |
 
 Feel free to reach out for collaboration or sponsorship opportunities.
